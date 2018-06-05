@@ -10,3 +10,15 @@
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
+
+# Folders
+_obj
+_test
+.idea
+.vscode
+.history
+vendor
+logs
+
+# binary
+hotbed
