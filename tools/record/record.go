@@ -19,7 +19,7 @@ const (
 	FATAL
 )
 
-var Recorder *Record
+var recorder *Record
 
 type Record struct {
 	FileMode   bool
@@ -56,39 +56,47 @@ func GetRecordLevel(val string) (level int) {
 	return level
 }
 
-func NewConsoleRecord(level, chanNum int, more bool) (r *Record) {
+func GetRecorder() *Record {
+	return recorder
+}
+
+func NewConsoleRecord(level, chanNum int, more bool) {
 
 	logger := log.New(os.Stdout, "[App] ", log.Ldate|log.Lmicroseconds)
 
-	r = &Record{FileMode: false, FilePath: "", FileName: "", More: more, Level: level, Daily: time.Now().Day(), Writer: nil, Logger: logger, RecordChan: make(chan string, chanNum)}
+	r := &Record{FileMode: false, FilePath: "", FileName: "", More: more, Level: level, Daily: time.Now().Day(), Writer: nil, Logger: logger, RecordChan: make(chan string, chanNum)}
 
 	go r.Print()
 
-	return r
+	recorder = r
 }
 
-func NewFileRecord(level, chanNum int, more bool, filePath, fileName string) (r *Record) {
+func NewFileRecord(level, chanNum int, more bool, filePath, fileName string) error {
 
 	os.MkdirAll(filePath, os.ModePerm)
 
 	fd, err := os.OpenFile(filepath.Join(filePath, fileName), os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0660)
 	if err != nil {
-		log.Println(err)
-		os.Exit(1)
+		return err
 	}
 
 	logger := log.New(fd, "[App] ", log.Ldate|log.Lmicroseconds)
 
-	r = &Record{FileMode: true, FilePath: filePath, FileName: fileName, More: more, Level: level, Daily: time.Now().Day(), Writer: nil, Logger: logger, RecordChan: make(chan string, chanNum)}
+	r := &Record{FileMode: true, FilePath: filePath, FileName: fileName, More: more, Level: level, Daily: time.Now().Day(), Writer: nil, Logger: logger, RecordChan: make(chan string, chanNum)}
 
 	go r.Print()
 
-	return r
+	recorder = r
+
+	return nil
 }
 
 func (r *Record) Close() {
 	close(r.RecordChan)
-	r.Writer.Close()
+
+	if r.Writer != nil {
+		r.Writer.Close()
+	}
 }
 
 func (r *Record) Detele() {

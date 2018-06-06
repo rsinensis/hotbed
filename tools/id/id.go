@@ -30,7 +30,7 @@ const (
 	maxNextIdsNum      = 1000 //小于4096
 )
 
-var IdWorker *Id
+var idWorker *Id
 
 type Id struct {
 	sequence      int64
@@ -45,27 +45,33 @@ func GetIdTwepoch() int64 {
 	return twepoch
 }
 
-// NewId new a snowflake id generator object.
-func NewId(workerId, datacenterId int64, twepoch int64) (*Id, error) {
+func GetIdWorker() *Id {
+	return idWorker
+}
 
-	Id := &Id{}
+// NewId new a snowflake id generator object.
+func NewId(workerId, datacenterId int64, twepoch int64) error {
+
+	id := &Id{}
 
 	if workerId > maxWorkerId || workerId < 0 {
-		return nil, fmt.Errorf("worker Id: %d error", workerId)
+		return fmt.Errorf("worker Id: %d error", workerId)
 	}
 
 	if datacenterId > maxDatacenterId || datacenterId < 0 {
-		return nil, fmt.Errorf("datacenter Id: %d error", datacenterId)
+		return fmt.Errorf("datacenter Id: %d error", datacenterId)
 	}
 
-	Id.workerId = workerId
-	Id.datacenterId = datacenterId
-	Id.lastTimestamp = -1
-	Id.sequence = 0
-	Id.twepoch = twepoch
-	Id.mutex = sync.Mutex{}
+	id.workerId = workerId
+	id.datacenterId = datacenterId
+	id.lastTimestamp = -1
+	id.sequence = 0
+	id.twepoch = twepoch
+	id.mutex = sync.Mutex{}
 
-	return Id, nil
+	idWorker = id
+
+	return nil
 }
 
 // timeGen generate a unix millisecond.

@@ -52,13 +52,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	idWorker, errId := id.NewId(1, 1, id.GetIdTwepoch())
+	errId := id.NewId(1, 1, id.GetIdTwepoch())
 	if errId != nil {
-		log.Println(fmt.Sprintf("App new id worker error:%v", configPath, errCfg))
+		log.Println(fmt.Sprintf("App new id worker error:%v", errId))
 		os.Exit(1)
 	}
-
-	id.IdWorker = idWorker
 
 	path := macaron.Config().Section("log").Key("path").String()
 	name := macaron.Config().Section("log").Key("name").String()
@@ -68,11 +66,19 @@ func main() {
 
 	switch BuildMode {
 	case "prod":
-		record.Recorder = record.NewConsoleRecord(record.GetRecordLevel(level), num, more)
+		record.NewConsoleRecord(record.GetRecordLevel(level), num, more)
 	case "test":
-		record.Recorder = record.NewFileRecord(record.GetRecordLevel(level), num, more, path, name)
+		err := record.NewFileRecord(record.GetRecordLevel(level), num, more, path, name)
+		if err != nil {
+			log.Println(fmt.Sprintf("NewFileRecord error:%v", err))
+			os.Exit(1)
+		}
 	case "dev":
-		record.Recorder = record.NewFileRecord(record.GetRecordLevel(level), num, more, path, name)
+		err := record.NewFileRecord(record.GetRecordLevel(level), num, more, path, name)
+		if err != nil {
+			log.Println(fmt.Sprintf("NewFileRecord error:%v", err))
+			os.Exit(1)
+		}
 	}
 
 	model := macaron.Config().Section("server").Key("Model").String()
