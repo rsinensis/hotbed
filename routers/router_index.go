@@ -10,6 +10,7 @@ import (
 func routerIndexInit(m *macaron.Macaron) {
 	m.Get("/test", test)
 	m.Get("/favicon.ico", favicon)
+	m.Get("/robots.txt", robots)
 }
 
 func test(ctx *env.Env) {
@@ -19,4 +20,8 @@ func test(ctx *env.Env) {
 
 func favicon(ctx *env.Env) {
 	ctx.ServeFile(filepath.Join(macaron.Config().Section("static").Key("static_path").String(), "favicon.ico"))
+}
+
+func robots(ctx *env.Env) {
+	ctx.ServeFile(filepath.Join(macaron.Config().Section("static").Key("static_path").String(), "robots.txt"))
 }
