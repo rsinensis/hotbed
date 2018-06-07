@@ -6,4 +6,5 @@ import (
 
 func RouterInit(m *macaron.Macaron) {
 	routerIndexInit(m)
+	routerDictionnaryInit(m)
 }

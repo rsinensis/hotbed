@@ -65,15 +65,10 @@ func main() {
 	more := macaron.Config().Section("log").Key("more").MustBool(false)
 
 	switch BuildMode {
-	case "prod":
+	case "dev":
 		record.NewConsoleRecord(record.GetRecordLevel(level), num, more)
 	case "test":
-		err := record.NewFileRecord(record.GetRecordLevel(level), num, more, path, name)
-		if err != nil {
-			log.Println(fmt.Sprintf("NewFileRecord error:%v", err))
-			os.Exit(1)
-		}
-	case "dev":
+	case "prod":
 		err := record.NewFileRecord(record.GetRecordLevel(level), num, more, path, name)
 		if err != nil {
 			log.Println(fmt.Sprintf("NewFileRecord error:%v", err))

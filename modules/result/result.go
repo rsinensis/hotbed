@@ -29,23 +29,44 @@ func New(code int, data interface{}) *Result {
 	return ret
 }
 
-func Ok(data interface{}) *Result {
+func Ok() *Result {
 
 	ret := new(Result)
 
 	ret.Code = SUCCESS
 	ret.Msg = MsgFlags[SUCCESS]
-	ret.Data = data
 
 	return ret
 }
 
-func Error() *Result {
+func Fail() *Result {
 
 	ret := new(Result)
 
 	ret.Code = ERROR
 	ret.Msg = MsgFlags[ERROR]
+
+	return ret
+}
+
+func OkByCode(code int, data interface{}) *Result {
+
+	ret := new(Result)
+
+	ret.Code = code
+	ret.Msg = MsgFlags[code]
+	ret.Data = data
+
+	return ret
+}
+
+func FailByCode(code int, data interface{}) *Result {
+
+	ret := new(Result)
+
+	ret.Code = code
+	ret.Msg = MsgFlags[code]
+	ret.Data = data
 
 	return ret
 }
