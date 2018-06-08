@@ -1,7 +1,6 @@
 package daos
 
 import (
-	"fmt"
 	"hotbed/models"
 	"hotbed/modules/engine"
 	"hotbed/tools/record"
@@ -18,9 +17,6 @@ func (this *DictionaryTypeDao) Set(dt *models.DictionaryType) bool {
 	if err == nil {
 		return true
 	}
-
-	fmt.Println(err)
-	fmt.Println("1")
 
 	record.GetRecorder().Error(err)
 

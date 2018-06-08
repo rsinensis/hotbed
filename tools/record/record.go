@@ -66,9 +66,10 @@ func NewConsoleRecord(level, chanNum int, more bool) {
 
 	r := &Record{FileMode: false, FilePath: "", FileName: "", More: more, Level: level, Daily: time.Now().Day(), Writer: nil, Logger: logger, RecordChan: make(chan string, chanNum)}
 
-	go r.Print()
-
 	recorder = r
+
+	go recorder.Print()
+
 }
 
 func NewFileRecord(level, chanNum int, more bool, filePath, fileName string) error {
@@ -84,9 +85,9 @@ func NewFileRecord(level, chanNum int, more bool, filePath, fileName string) err
 
 	r := &Record{FileMode: true, FilePath: filePath, FileName: fileName, More: more, Level: level, Daily: time.Now().Day(), Writer: nil, Logger: logger, RecordChan: make(chan string, chanNum)}
 
-	go r.Print()
-
 	recorder = r
+
+	go recorder.Print()
 
 	return nil
 }
@@ -117,40 +118,43 @@ func (r *Record) Detele() {
 
 func (r *Record) Print() {
 
-	select {
-	case <-time.After(5 * time.Second):
+	for {
+		select {
+		case <-time.After(5 * time.Second):
 
-	case msg := <-r.RecordChan:
-		if r.FileMode {
-			day := time.Now().Day()
+		case msg := <-r.RecordChan:
 
-			if day != r.Daily {
+			if r.FileMode {
+				day := time.Now().Day()
 
-				r.Writer.Close()
+				if day != r.Daily {
 
-				fp := filepath.Join(r.FilePath, r.FileName)
+					r.Writer.Close()
 
-				old := time.Now().AddDate(0, 0, -1).Format("20060102")
+					fp := filepath.Join(r.FilePath, r.FileName)
 
-				os.Rename(fp, fmt.Sprintf("%s.%s", fp, old))
+					old := time.Now().AddDate(0, 0, -1).Format("20060102")
 
-				fd, err := os.OpenFile(fp, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0660)
-				if err != nil {
-					log.Println(err)
-					os.Exit(1)
+					os.Rename(fp, fmt.Sprintf("%s.%s", fp, old))
+
+					fd, err := os.OpenFile(fp, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0660)
+					if err != nil {
+						log.Println(err)
+						os.Exit(1)
+					}
+
+					logger := log.New(fd, "", log.Ldate|log.Lmicroseconds)
+
+					r.Writer = fd
+					r.Logger = logger
+					r.Daily = day
+
+					go r.Detele()
 				}
-
-				logger := log.New(fd, "", log.Ldate|log.Lmicroseconds)
-
-				r.Writer = fd
-				r.Logger = logger
-				r.Daily = day
-
-				go r.Detele()
 			}
-		}
 
-		r.Logger.Println(msg)
+			r.Logger.Println(msg)
+		}
 	}
 }
 

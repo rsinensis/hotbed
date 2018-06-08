@@ -45,6 +45,10 @@ func main() {
 		os.Exit(0)
 	}
 
+	if len(BuildMode) == 0 {
+		BuildMode = "dev"
+	}
+
 	configPath := filepath.Join(macaron.Root, "configs", fmt.Sprintf("config_%v.ini", BuildMode))
 	_, errCfg := macaron.SetConfig(configPath)
 	if errCfg != nil {
