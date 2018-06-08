@@ -7,8 +7,9 @@ type DictionaryItem struct {
 	Pid   int64
 	Name  string
 	Value string
-	Sort  int
+	Level int
 	Color string
+	Icon  string
 }
 
 func (this *DictionaryItem) Info() string {
