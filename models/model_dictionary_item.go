@@ -5,9 +5,10 @@ import "fmt"
 type DictionaryItem struct {
 	Base
 	Pid   int64
+	Code  string
 	Name  string
-	Value string
-	Level int
+	Val   string
+	Class int
 	Color string
 	Icon  string
 }

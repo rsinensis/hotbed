@@ -4,8 +4,8 @@ import "fmt"
 
 type Config struct {
 	Base
-	Name  string
-	Value string `xorm:"text"`
+	Name string
+	Val  string `xorm:"text"`
 }
 
 func (this *Config) Info() string {
