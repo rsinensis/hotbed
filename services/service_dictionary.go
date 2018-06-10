@@ -19,6 +19,11 @@ func (this *DictionaryTypeService) GetById(id int64) (dt *models.DictionaryType)
 	return dictionaryTypeDao.GetById(id)
 }
 
+func (this *DictionaryTypeService) GetByCode(code string) (dt *models.DictionaryType) {
+
+	return dictionaryTypeDao.GetByCode(code)
+}
+
 func (this *DictionaryTypeService) UpdateById(id int64, dt *models.DictionaryType) bool {
 
 	return dictionaryTypeDao.UpdateById(id, dt)

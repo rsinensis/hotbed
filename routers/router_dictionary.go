@@ -14,11 +14,13 @@ var dictionaryTypeService services.DictionaryTypeService
 
 func routerDictionnaryInit(m *macaron.Macaron) {
 	m.Group("/dictionary", func() {
-		m.Any("/add", add)
+		m.Group("/type", func() {
+			m.Any("/add", addDictionnaryType)
+		})
 	})
 }
 
-func add(ctx *env.Env) {
+func addDictionnaryType(ctx *env.Env) {
 
 	name := ctx.QueryTrim("name")
 	code := ctx.QueryTrim("code")
@@ -29,7 +31,13 @@ func add(ctx *env.Env) {
 	valid.Required(code, "code").Message("类型不能为空")
 
 	if valid.HasErrors() {
-		ctx.JSON(200, result.FailByCode(result.INVALID_PARAMS, valid.Errors))
+		ctx.JSON(200, result.FailByCode(result.INVALID_PARAMS, valid.Errors[0].Message))
+		return
+	}
+
+	dictionaryType := dictionaryTypeService.GetByCode(code)
+	if dictionaryType.Id != 0 {
+		ctx.JSON(200, result.FailByCode(result.EXIST, "code"))
 		return
 	}
 

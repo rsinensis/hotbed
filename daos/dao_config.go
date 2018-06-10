@@ -23,10 +23,11 @@ func (this *ConfigDao) Set(model *models.Config) bool {
 	return false
 }
 
-func (this *ConfigDao) GetById(id int64) (model *models.Config) {
+func (this *ConfigDao) GetById(id int64) *models.Config {
 
 	orm := engine.GetEngine()
 
+	model := new(models.Config)
 	_, err := orm.Id(id).Get(model)
 
 	if err != nil {
@@ -36,10 +37,11 @@ func (this *ConfigDao) GetById(id int64) (model *models.Config) {
 	return model
 }
 
-func (this *ConfigDao) GetByName(name string) (model *models.Config) {
+func (this *ConfigDao) GetByName(name string) *models.Config {
 
 	orm := engine.GetEngine()
 
+	model := new(models.Config)
 	_, err := orm.Where("name = ?", name).Get(model)
 
 	if err != nil {

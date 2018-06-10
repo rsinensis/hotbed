@@ -23,11 +23,26 @@ func (this *DictionaryTypeDao) Set(dt *models.DictionaryType) bool {
 	return false
 }
 
-func (this *DictionaryTypeDao) GetById(id int64) (dt *models.DictionaryType) {
+func (this *DictionaryTypeDao) GetById(id int64) *models.DictionaryType {
 
 	orm := engine.GetEngine()
 
+	dt := new(models.DictionaryType)
 	_, err := orm.Id(id).Get(dt)
+
+	if err != nil {
+		record.GetRecorder().Error(err)
+	}
+
+	return dt
+}
+
+func (this *DictionaryTypeDao) GetByCode(code string) *models.DictionaryType {
+
+	orm := engine.GetEngine()
+
+	dt := new(models.DictionaryType)
+	_, err := orm.Where("code = ?", code).Get(dt)
 
 	if err != nil {
 		record.GetRecorder().Error(err)
