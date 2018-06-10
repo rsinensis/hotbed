@@ -68,7 +68,8 @@ func createEngine(key string) {
 		orm.ShowSQL(true)
 		orm.Logger().SetLevel(core.LOG_DEBUG)
 	case macaron.PROD:
-		orm.Logger().SetLevel(core.LOG_ERR)
+		//orm.Logger().SetLevel(core.LOG_ERR)
+		orm.ShowSQL(false)
 	}
 
 	maxIdleConns := macaron.Config().Section("database." + key).Key("MaxIdleConns").MustInt(10)
