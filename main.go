@@ -108,6 +108,8 @@ func main() {
 		}()
 	}
 
+	log.Println("Server running on:", fmt.Sprintf("%v:%v", host, port))
+
 	// Wait for interrupt signal to gracefully shutdown the server with
 	// a timeout of 5 seconds.
 
