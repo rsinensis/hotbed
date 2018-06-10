@@ -3,7 +3,7 @@ package models
 import "fmt"
 
 type DictionaryItem struct {
-	Base
+	Base  `xorm:"extends"`
 	Pid   int64
 	Code  string
 	Name  string

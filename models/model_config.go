@@ -3,7 +3,7 @@ package models
 import "fmt"
 
 type Config struct {
-	Base
+	Base `xorm:"extends"`
 	Name string
 	Val  string `xorm:"text"`
 }
