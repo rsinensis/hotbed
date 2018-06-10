@@ -11,7 +11,7 @@
  Target Server Version : 100209
  File Encoding         : 65001
 
- Date: 10/06/2018 17:31:51
+ Date: 10/06/2018 18:31:13
 */
 
 SET NAMES utf8mb4;
@@ -28,7 +28,8 @@ CREATE TABLE `t_config`  (
   `created` timestamp(0) NULL DEFAULT NULL,
   `updated` timestamp(0) NULL DEFAULT NULL,
   `deleted` timestamp(0) NULL DEFAULT NULL,
-  PRIMARY KEY (`id`) USING BTREE
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `index_name`(`name`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
@@ -60,7 +61,8 @@ CREATE TABLE `t_dictionary_type`  (
   `created` timestamp(0) NULL DEFAULT NULL,
   `updated` timestamp(0) NULL DEFAULT NULL,
   `deleted` timestamp(0) NULL DEFAULT NULL,
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `index_code`(`code`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
 SET FOREIGN_KEY_CHECKS = 1;
