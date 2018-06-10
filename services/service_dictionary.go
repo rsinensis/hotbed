@@ -5,8 +5,7 @@ import (
 	"hotbed/models"
 )
 
-type DictionaryTypeService struct {
-}
+type DictionaryTypeService struct{}
 
 var dictionaryTypeDao daos.DictionaryTypeDao
 

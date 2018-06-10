@@ -3,8 +3,8 @@ package routers
 import (
 	"hotbed/models"
 	"hotbed/modules/env"
-	"hotbed/modules/result"
 	"hotbed/services"
+	"hotbed/tools/result"
 
 	"github.com/astaxie/beego/validation"
 	macaron "gopkg.in/macaron.v1"

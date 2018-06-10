@@ -8,6 +8,12 @@
   revision = "7677a1d7c1137cd3dd5ba7a076d0c898a1ef4520"
 
 [[projects]]
+  name = "github.com/astaxie/beego"
+  packages = ["validation"]
+  revision = "bf5c5626ab429e66d88602e1ab1ab5fbf4629a01"
+  version = "v1.9.2"
+
+[[projects]]
   branch = "master"
   name = "github.com/flosch/pongo2"
   packages = ["."]
@@ -119,7 +125,7 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["pbkdf2"]
-  revision = "df8d4716b3472e4a531c33cedbe537dae921a1a9"
+  revision = "8ac0e0d97ce45cd83d1d7243c060cb8461dda5e9"
 
 [[projects]]
   name = "google.golang.org/appengine"
@@ -142,6 +148,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "fa29cb546012db737a138ce64e6b88cc96b18d9f0599137b766932cc6891775b"
+  inputs-digest = "9996f17e690b284ea8c2ed136df5b0fec56e77b2b7b4e1824c175255c2d0772f"
   solver-name = "gps-cdcl"
   solver-version = 1

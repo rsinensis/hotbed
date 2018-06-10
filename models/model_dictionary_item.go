@@ -3,7 +3,7 @@ package models
 import "fmt"
 
 type DictionaryItem struct {
-	Id    int64
+	Base
 	Pid   int64
 	Name  string
 	Value string
