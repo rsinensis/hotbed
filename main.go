@@ -7,6 +7,7 @@ import (
 	"hotbed/models"
 	"hotbed/modules/env"
 	"hotbed/routers"
+	"hotbed/tasks"
 	"hotbed/tools/id"
 	"hotbed/tools/record"
 	"log"
@@ -184,9 +185,11 @@ func getHandler() *macaron.Macaron {
 
 	m.Use(env.Enver())
 
+	models.ModelInit()
+
 	routers.RouterInit(m)
 
-	models.ModelInit()
+	tasks.TaskInit()
 
 	return m
 }
