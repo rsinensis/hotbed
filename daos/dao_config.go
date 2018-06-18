@@ -19,7 +19,6 @@ func (this *ConfigDao) Set(model *models.Config) bool {
 	}
 
 	record.GetRecorder().Error(err)
-
 	return false
 }
 
@@ -64,7 +63,6 @@ func (this *ConfigDao) DeleteById(id int64) bool {
 	}
 
 	record.GetRecorder().Error(err)
-
 	return false
 }
 
@@ -79,6 +77,5 @@ func (this *ConfigDao) UpdateById(id int64, model *models.Config) bool {
 	}
 
 	record.GetRecorder().Error(err)
-
 	return false
 }

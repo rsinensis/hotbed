@@ -18,12 +18,12 @@ func GetMsg(code int) string {
 	return ""
 }
 
-func New(code int, data interface{}) *Result {
+func New(code int, msg string, data interface{}) *Result {
 
 	ret := new(Result)
 
 	ret.Code = code
-	ret.Msg = MsgFlags[code]
+	ret.Msg = msg
 	ret.Data = data
 
 	return ret

@@ -3,6 +3,8 @@ package routers
 import (
 	"fmt"
 	"hotbed/modules/env"
+	"hotbed/tools/record"
+	"hotbed/tools/result"
 	"os"
 	"path/filepath"
 	"strings"
@@ -12,7 +14,8 @@ import (
 )
 
 const rule = "png|jpeg|bmp|svg|jpg|gif"
-const size int64 = 10 << 20
+const max int64 = 10
+const size int64 = max << 20
 
 func routerIndexInit(m *macaron.Macaron) {
 	m.Get("/test", test)
@@ -39,20 +42,25 @@ func upload(ctx *env.Env) {
 
 	_, fh, err := ctx.GetFile("file")
 	if err != nil {
+		record.GetRecorder().Error(err)
+		ctx.JSON(200, result.New(500, "获取失败", nil))
 		return
 	}
 
 	if len(fh.Filename) < 3 {
+		ctx.JSON(200, result.New(400, "文件名不正确", nil))
 		return
 	}
 
 	pos := strings.LastIndex(fh.Filename, ".")
 	ext := fh.Filename[pos+1:]
 	if !strings.Contains(ext, rule) {
+		ctx.JSON(200, result.New(400, "文件格式不正确", nil))
 		return
 	}
 
 	if size < fh.Size {
+		ctx.JSON(200, result.New(400, fmt.Sprintf("文件不能大于%vMB", max), nil))
 		return
 	}
 
@@ -65,8 +73,11 @@ func upload(ctx *env.Env) {
 
 	err = ctx.SaveToFile("file", fileName)
 	if err != nil {
+		ctx.JSON(200, result.New(500, "获取失败", nil))
 		return
 	}
+
+	ctx.JSON(200, result.New(200, "ok", fileName))
 }
 
 func uploadMove(name string) error {

@@ -19,7 +19,6 @@ func (this *DictionaryTypeDao) Set(dt *models.DictionaryType) bool {
 	}
 
 	record.GetRecorder().Error(err)
-
 	return false
 }
 
@@ -64,7 +63,6 @@ func (this *DictionaryTypeDao) DeleteById(id int64) bool {
 	}
 
 	record.GetRecorder().Error(err)
-
 	return false
 }
 
@@ -79,6 +77,5 @@ func (this *DictionaryTypeDao) UpdateById(id int64, dt *models.DictionaryType) b
 	}
 
 	record.GetRecorder().Error(err)
-
 	return false
 }
