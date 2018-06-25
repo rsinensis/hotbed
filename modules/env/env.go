@@ -1,8 +1,6 @@
 package env
 
 import (
-	"time"
-
 	"github.com/go-macaron/cache"
 	"github.com/go-macaron/csrf"
 	"github.com/go-macaron/session"
@@ -28,8 +26,6 @@ func Enver() macaron.Handler {
 			Csrf:    x,
 			Session: sess,
 		}
-
-		c.Data["PageTime"] = time.Now()
 
 		ctx.Map(c)
 	}

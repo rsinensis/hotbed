@@ -27,7 +27,6 @@ func routerIndexInit(m *macaron.Macaron) {
 
 func test(ctx *env.Env) {
 	ctx.PlainText(200, []byte("ok"))
-
 }
 
 func favicon(ctx *env.Env) {

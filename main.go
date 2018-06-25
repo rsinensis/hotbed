@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"hotbed/models"
 	"hotbed/modules/env"
+	"hotbed/modules/recovery"
 	"hotbed/routers"
 	"hotbed/tasks"
 	"hotbed/tools/id"
@@ -19,7 +20,6 @@ import (
 
 	"github.com/go-macaron/cache"
 	"github.com/go-macaron/csrf"
-	"github.com/go-macaron/gzip"
 	"github.com/go-macaron/pongo2"
 	"github.com/go-macaron/session"
 	"github.com/go-macaron/toolbox"
@@ -144,8 +144,9 @@ func getHandler() *macaron.Macaron {
 		m.Use(macaron.Logger())
 	}
 
-	m.Use(macaron.Recovery())
-	m.Use(gzip.Gziper())
+	m.Use(recovery.Recovery())
+	//m.Use(macaron.Recovery())
+	//m.Use(gzip.Gziper())
 
 	m.Use(cache.Cacher())
 
