@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"flag"
 	"fmt"
 	"hotbed/models"
@@ -104,6 +105,11 @@ func main() {
 			fmt.Println(server.ListenAndServe())
 		}()
 	case "https":
+		if _, err := tls.LoadX509KeyPair(certFile, keyFile); err != nil {
+			log.Println(fmt.Sprintf("https key error:%v", err))
+			os.Exit(1)
+		}
+
 		go func() {
 			fmt.Println(server.ListenAndServeTLS(certFile, keyFile))
 		}()
