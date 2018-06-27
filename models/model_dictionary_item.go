@@ -10,7 +10,6 @@ type DictionaryItem struct {
 	Val   string
 	Class int
 	Color string
-	Icon  string
 }
 
 func (this *DictionaryItem) Info() string {

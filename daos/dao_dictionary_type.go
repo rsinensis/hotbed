@@ -2,17 +2,16 @@ package daos
 
 import (
 	"hotbed/models"
-	"hotbed/modules/engine"
 	"hotbed/tools/record"
+
+	"github.com/go-xorm/xorm"
 )
 
 type DictionaryTypeDao struct{}
 
-func (this *DictionaryTypeDao) Set(dt *models.DictionaryType) bool {
+func (this *DictionaryTypeDao) Set(se *xorm.Session, dt *models.DictionaryType) bool {
 
-	orm := engine.GetEngine()
-
-	_, err := orm.Insert(dt)
+	_, err := se.Insert(dt)
 
 	if err == nil {
 		return true
@@ -22,12 +21,22 @@ func (this *DictionaryTypeDao) Set(dt *models.DictionaryType) bool {
 	return false
 }
 
-func (this *DictionaryTypeDao) GetById(id int64) *models.DictionaryType {
+func (this *DictionaryTypeDao) GetAll(se *xorm.Session) []models.DictionaryType {
 
-	orm := engine.GetEngine()
+	var dts []models.DictionaryType
+	_, err := se.Get(&dts)
+
+	if err != nil {
+		record.GetRecorder().Error(err)
+	}
+
+	return dts
+}
+
+func (this *DictionaryTypeDao) GetById(se *xorm.Session, id int64) *models.DictionaryType {
 
 	dt := new(models.DictionaryType)
-	_, err := orm.Id(id).Get(dt)
+	_, err := se.Id(id).Get(dt)
 
 	if err != nil {
 		record.GetRecorder().Error(err)
@@ -36,12 +45,10 @@ func (this *DictionaryTypeDao) GetById(id int64) *models.DictionaryType {
 	return dt
 }
 
-func (this *DictionaryTypeDao) GetByCode(code string) *models.DictionaryType {
-
-	orm := engine.GetEngine()
+func (this *DictionaryTypeDao) GetByCode(se *xorm.Session, code string) *models.DictionaryType {
 
 	dt := new(models.DictionaryType)
-	_, err := orm.Where("code = ?", code).Get(dt)
+	_, err := se.Where("code = ?", code).Get(dt)
 
 	if err != nil {
 		record.GetRecorder().Error(err)
@@ -50,13 +57,11 @@ func (this *DictionaryTypeDao) GetByCode(code string) *models.DictionaryType {
 	return dt
 }
 
-func (this *DictionaryTypeDao) DeleteById(id int64) bool {
-
-	orm := engine.GetEngine()
+func (this *DictionaryTypeDao) DeleteById(se *xorm.Session, id int64) bool {
 
 	dt := new(models.DictionaryType)
 
-	_, err := orm.Id(id).Delete(dt)
+	_, err := se.Id(id).Delete(dt)
 
 	if err == nil {
 		return true
@@ -66,11 +71,9 @@ func (this *DictionaryTypeDao) DeleteById(id int64) bool {
 	return false
 }
 
-func (this *DictionaryTypeDao) UpdateById(id int64, dt *models.DictionaryType) bool {
+func (this *DictionaryTypeDao) UpdateById(se *xorm.Session, id int64, dt *models.DictionaryType) bool {
 
-	orm := engine.GetEngine()
-
-	_, err := orm.Id(id).Update(dt)
+	_, err := se.Id(id).Update(dt)
 
 	if err == nil {
 		return true

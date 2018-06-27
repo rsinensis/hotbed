@@ -2,17 +2,16 @@ package daos
 
 import (
 	"hotbed/models"
-	"hotbed/modules/engine"
 	"hotbed/tools/record"
+
+	"github.com/go-xorm/xorm"
 )
 
 type ConfigDao struct{}
 
-func (this *ConfigDao) Set(model *models.Config) bool {
+func (this *ConfigDao) Set(se *xorm.Session, model *models.Config) bool {
 
-	orm := engine.GetEngine()
-
-	_, err := orm.Insert(model)
+	_, err := se.Insert(model)
 
 	if err == nil {
 		return true
@@ -22,12 +21,10 @@ func (this *ConfigDao) Set(model *models.Config) bool {
 	return false
 }
 
-func (this *ConfigDao) GetById(id int64) *models.Config {
-
-	orm := engine.GetEngine()
+func (this *ConfigDao) GetById(se *xorm.Session, id int64) *models.Config {
 
 	model := new(models.Config)
-	_, err := orm.Id(id).Get(model)
+	_, err := se.Id(id).Get(model)
 
 	if err != nil {
 		record.GetRecorder().Error(err)
@@ -36,12 +33,10 @@ func (this *ConfigDao) GetById(id int64) *models.Config {
 	return model
 }
 
-func (this *ConfigDao) GetByName(name string) *models.Config {
-
-	orm := engine.GetEngine()
+func (this *ConfigDao) GetByName(se *xorm.Session, name string) *models.Config {
 
 	model := new(models.Config)
-	_, err := orm.Where("name = ?", name).Get(model)
+	_, err := se.Where("name = ?", name).Get(model)
 
 	if err != nil {
 		record.GetRecorder().Error(err)
@@ -50,13 +45,11 @@ func (this *ConfigDao) GetByName(name string) *models.Config {
 	return model
 }
 
-func (this *ConfigDao) DeleteById(id int64) bool {
-
-	orm := engine.GetEngine()
+func (this *ConfigDao) DeleteById(se *xorm.Session, id int64) bool {
 
 	model := new(models.Config)
 
-	_, err := orm.Id(id).Delete(model)
+	_, err := se.Id(id).Delete(model)
 
 	if err == nil {
 		return true
@@ -66,11 +59,9 @@ func (this *ConfigDao) DeleteById(id int64) bool {
 	return false
 }
 
-func (this *ConfigDao) UpdateById(id int64, model *models.Config) bool {
+func (this *ConfigDao) UpdateById(se *xorm.Session, id int64, model *models.Config) bool {
 
-	orm := engine.GetEngine()
-
-	_, err := orm.Id(id).Update(model)
+	_, err := se.Id(id).Update(model)
 
 	if err == nil {
 		return true

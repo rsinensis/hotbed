@@ -3,33 +3,70 @@ package services
 import (
 	"hotbed/daos"
 	"hotbed/models"
+	"hotbed/modules/engine"
+	"hotbed/tools/record"
 )
 
-type DictionaryTypeService struct{}
+type DictionaryService struct{}
 
 var dictionaryTypeDao daos.DictionaryTypeDao
+var dictionaryItemDao daos.DictionaryItemDao
 
-func (this *DictionaryTypeService) Set(dt *models.DictionaryType) bool {
+func (this *DictionaryService) SetType(dt *models.DictionaryType) bool {
+	se := engine.GetSession()
+	defer se.Close()
 
-	return dictionaryTypeDao.Set(dt)
+	return dictionaryTypeDao.Set(se, dt)
 }
 
-func (this *DictionaryTypeService) GetById(id int64) (dt *models.DictionaryType) {
+func (this *DictionaryService) GetAllType() []models.DictionaryType {
+	se := engine.GetSession()
+	defer se.Close()
 
-	return dictionaryTypeDao.GetById(id)
+	return dictionaryTypeDao.GetAll(se)
 }
 
-func (this *DictionaryTypeService) GetByCode(code string) (dt *models.DictionaryType) {
+func (this *DictionaryService) GetTypeByCode(code string) *models.DictionaryType {
+	se := engine.GetSession()
+	defer se.Close()
 
-	return dictionaryTypeDao.GetByCode(code)
+	return dictionaryTypeDao.GetByCode(se, code)
 }
 
-func (this *DictionaryTypeService) UpdateById(id int64, dt *models.DictionaryType) bool {
+func (this *DictionaryService) GetTypeById(id int64) *models.DictionaryType {
+	se := engine.GetSession()
+	defer se.Close()
 
-	return dictionaryTypeDao.UpdateById(id, dt)
+	return dictionaryTypeDao.GetById(se, id)
 }
 
-func (this *DictionaryTypeService) DeleteById(id int64) bool {
+func (this *DictionaryService) UpdateTypeById(id int64, dt *models.DictionaryType) bool {
+	se := engine.GetSession()
+	defer se.Close()
 
-	return dictionaryTypeDao.DeleteById(id)
+	return dictionaryTypeDao.UpdateById(se, id, dt)
+}
+
+func (this *DictionaryService) DeleteType(id int64) bool {
+	se := engine.GetSession()
+	defer se.Close()
+
+	se.Begin()
+
+	if !dictionaryTypeDao.DeleteById(se, id) {
+		se.Rollback()
+		return false
+	}
+
+	if !dictionaryItemDao.DeleteById(se, id) {
+		se.Rollback()
+		return false
+	}
+
+	if err := se.Commit(); err != nil {
+		record.GetRecorder().Error(err)
+		return false
+	}
+
+	return true
 }
