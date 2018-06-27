@@ -13,5 +13,5 @@ type DictionaryItem struct {
 }
 
 func (this *DictionaryItem) Info() string {
-	return fmt.Sprintf("%#v", this)
+	return fmt.Sprintf("%+v", this)
 }

@@ -9,5 +9,5 @@ type DictionaryType struct {
 }
 
 func (this *DictionaryType) Info() string {
-	return fmt.Sprintf("%#v", this)
+	return fmt.Sprintf("%+v", this)
 }

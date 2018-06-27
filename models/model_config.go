@@ -9,5 +9,5 @@ type Config struct {
 }
 
 func (this *Config) Info() string {
-	return fmt.Sprintf("%#v", this)
+	return fmt.Sprintf("%+v", this)
 }
