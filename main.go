@@ -14,6 +14,7 @@ import (
 	"hotbed/tools/record"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -39,12 +40,14 @@ var (
 
 func redirectToHttps(w http.ResponseWriter, req *http.Request) {
 	// remove/add not default ports from req.Host
-	target := "https://" + req.Host + req.URL.Path
-	if len(req.URL.RawQuery) > 0 {
-		target += "?" + req.URL.RawQuery
-	}
-	log.Printf("redirect to: %s", target)
-	http.Redirect(w, req, target,
+	// target := "https://" + req.Host + req.URL.Path
+	// if len(req.URL.RawQuery) > 0 {
+	// 	target += "?" + req.URL.RawQuery
+	// }
+	target := url.URL{Scheme: "https", Host: req.Host, Path: req.URL.Path, RawQuery: req.URL.RawQuery}
+
+	// /log.Printf("redirect to: %s", target)
+	http.Redirect(w, req, target.String(),
 		// see @andreiavrammsd comment: often 307 > 301
 		http.StatusTemporaryRedirect)
 }
