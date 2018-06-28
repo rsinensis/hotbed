@@ -52,15 +52,13 @@ func main() {
 	}
 
 	configPath := filepath.Join(macaron.Root, "configs", fmt.Sprintf("config_%v.ini", BuildMode))
-	_, errCfg := macaron.SetConfig(configPath)
-	if errCfg != nil {
-		log.Println(fmt.Sprintf("App load config:%v error:%v", configPath, errCfg))
+	if _, err := macaron.SetConfig(configPath); err != nil {
+		log.Println(fmt.Sprintf("App load config:%v error:%v", configPath, err))
 		os.Exit(1)
 	}
 
-	errId := id.NewId(1, 1, id.GetIdTwepoch())
-	if errId != nil {
-		log.Println(fmt.Sprintf("App new id worker error:%v", errId))
+	if err := id.NewId(1, 1, id.GetIdTwepoch()); err != nil {
+		log.Println(fmt.Sprintf("App new id worker error:%v", err))
 		os.Exit(1)
 	}
 
@@ -84,7 +82,8 @@ func main() {
 
 	model := macaron.Config().Section("server").Key("Model").String()
 	host := macaron.Config().Section("server").Key("Host").String()
-	port := macaron.Config().Section("server").Key("Port").MustInt(8080)
+	port := macaron.Config().Section("server").Key("Port").MustInt(80)
+	redirectPort := macaron.Config().Section("server").Key("RedirectPort").MustInt(80)
 	certFile := macaron.Config().Section("server").Key("CertFile").String()
 	keyFile := macaron.Config().Section("server").Key("KeyFile").String()
 	readTimeout := macaron.Config().Section("server").Key("ReadTimeout").MustInt(10)
@@ -109,9 +108,12 @@ func main() {
 			log.Println(fmt.Sprintf("https key error:%v", err))
 			os.Exit(1)
 		}
+		go func() {
+			log.Println(server.ListenAndServeTLS(certFile, keyFile))
+		}()
 
 		go func() {
-			fmt.Println(server.ListenAndServeTLS(certFile, keyFile))
+			log.Println(http.ListenAndServe(fmt.Sprintf("%v:%v", host, redirectPort), http.HandlerFunc(redirectToHttps)))
 		}()
 	}
 
@@ -199,4 +201,16 @@ func getHandler() *macaron.Macaron {
 	tasks.TaskInit()
 
 	return m
+}
+
+func redirectToHttps(w http.ResponseWriter, req *http.Request) {
+	// remove/add not default ports from req.Host
+	target := "https://" + req.Host + req.URL.Path
+	if len(req.URL.RawQuery) > 0 {
+		target += "?" + req.URL.RawQuery
+	}
+	log.Printf("redirect to: %s", target)
+	http.Redirect(w, req, target,
+		// see @andreiavrammsd comment: often 307 > 301
+		http.StatusTemporaryRedirect)
 }
