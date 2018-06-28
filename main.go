@@ -36,6 +36,84 @@ var (
 	BuildMode string
 )
 
+func redirectToHttps(w http.ResponseWriter, req *http.Request) {
+	// remove/add not default ports from req.Host
+	target := "https://" + req.Host + req.URL.Path
+	if len(req.URL.RawQuery) > 0 {
+		target += "?" + req.URL.RawQuery
+	}
+	log.Printf("redirect to: %s", target)
+	http.Redirect(w, req, target,
+		// see @andreiavrammsd comment: often 307 > 301
+		http.StatusTemporaryRedirect)
+}
+
+func getHandler() *macaron.Macaron {
+
+	m := macaron.New()
+
+	switch BuildMode {
+	case "prod":
+		macaron.Env = macaron.PROD
+		macaron.ColorLog = false
+	case "test":
+		macaron.Env = macaron.TEST
+	case "dev":
+		macaron.Env = macaron.DEV
+		m.Use(macaron.Logger())
+	}
+
+	m.Use(recovery.Recovery())
+	//m.Use(macaron.Recovery())
+	//m.Use(gzip.Gziper())
+
+	m.Use(cache.Cacher())
+
+	m.SetDefaultCookieSecret(macaron.Config().Section("cookie").Key("cookie_secret").String())
+
+	m.Use(session.Sessioner(session.Options{
+		// Provider:       macaron.Config().Section("sql").Key("sql_type").String(),
+		// ProviderConfig: models.GetOrmUrl(),
+		Gclifetime:     macaron.Config().Section("session").Key("session_time").MustInt64(),
+		CookiePath:     macaron.Config().Section("cookie").Key("cookie_path").String(),
+		CookieName:     macaron.Config().Section("cookie").Key("cookie_name").String(),
+		CookieLifeTime: macaron.Config().Section("cookie").Key("cookie_time").MustInt(),
+	}))
+
+	m.Use(csrf.Csrfer(csrf.Options{
+		Secret: macaron.Config().Section("csrf").Key("csrf_secret").String(),
+	}))
+
+	m.Use(macaron.Static(macaron.Config().Section("static").Key("static_path").String(),
+		macaron.StaticOptions{
+			Prefix:      macaron.Config().Section("static").Key("static_prefix").String(),
+			SkipLogging: macaron.Config().Section("static").Key("static_skip_log").MustBool(),
+		}))
+
+	m.Use(pongo2.Pongoer(pongo2.Options{
+		Directory:       macaron.Config().Section("template").Key("template_path").String(),
+		Extensions:      []string{".tmpl", ".html"},
+		Charset:         "UTF-8",
+		IndentJSON:      macaron.Env != macaron.PROD,
+		IndentXML:       true,
+		HTMLContentType: "text/html",
+	}))
+
+	if macaron.Env == macaron.DEV {
+		m.Use(toolbox.Toolboxer(m))
+	}
+
+	m.Use(env.Enver())
+
+	models.ModelInit()
+
+	routers.RouterInit(m)
+
+	tasks.TaskInit()
+
+	return m
+}
+
 func main() {
 
 	var v bool
@@ -105,13 +183,29 @@ func main() {
 		}()
 	case "https":
 		if _, err := tls.LoadX509KeyPair(certFile, keyFile); err != nil {
-			log.Println(fmt.Sprintf("https key error:%v", err))
+			log.Println(fmt.Sprintf("https certificate error:%v", err))
 			os.Exit(1)
 		}
+
+		cfg := &tls.Config{
+			MinVersion:               tls.VersionTLS12,
+			CurvePreferences:         []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256},
+			PreferServerCipherSuites: true,
+			CipherSuites: []uint16{
+				tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+				tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
+				tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
+				tls.TLS_RSA_WITH_AES_256_CBC_SHA,
+			},
+		}
+		server.TLSConfig = cfg
+		server.TLSNextProto = make(map[string]func(*http.Server, *tls.Conn, http.Handler), 0)
+
 		go func() {
 			log.Println(server.ListenAndServeTLS(certFile, keyFile))
 		}()
 
+		// redirect every http request to https
 		go func() {
 			log.Println(http.ListenAndServe(fmt.Sprintf("%v:%v", host, redirectPort), http.HandlerFunc(redirectToHttps)))
 		}()
@@ -135,82 +229,4 @@ func main() {
 	}
 
 	log.Println("Server exiting")
-}
-
-func getHandler() *macaron.Macaron {
-
-	m := macaron.New()
-
-	switch BuildMode {
-	case "prod":
-		macaron.Env = macaron.PROD
-		macaron.ColorLog = false
-	case "test":
-		macaron.Env = macaron.TEST
-	case "dev":
-		macaron.Env = macaron.DEV
-		m.Use(macaron.Logger())
-	}
-
-	m.Use(recovery.Recovery())
-	//m.Use(macaron.Recovery())
-	//m.Use(gzip.Gziper())
-
-	m.Use(cache.Cacher())
-
-	m.SetDefaultCookieSecret(macaron.Config().Section("cookie").Key("cookie_secret").String())
-
-	m.Use(session.Sessioner(session.Options{
-		// Provider:       macaron.Config().Section("sql").Key("sql_type").String(),
-		// ProviderConfig: models.GetOrmUrl(),
-		Gclifetime:     macaron.Config().Section("session").Key("session_time").MustInt64(),
-		CookiePath:     macaron.Config().Section("cookie").Key("cookie_path").String(),
-		CookieName:     macaron.Config().Section("cookie").Key("cookie_name").String(),
-		CookieLifeTime: macaron.Config().Section("cookie").Key("cookie_time").MustInt(),
-	}))
-
-	m.Use(csrf.Csrfer(csrf.Options{
-		Secret: macaron.Config().Section("csrf").Key("csrf_secret").String(),
-	}))
-
-	m.Use(macaron.Static(macaron.Config().Section("static").Key("static_path").String(),
-		macaron.StaticOptions{
-			Prefix:      macaron.Config().Section("static").Key("static_prefix").String(),
-			SkipLogging: macaron.Config().Section("static").Key("static_skip_log").MustBool(),
-		}))
-
-	m.Use(pongo2.Pongoer(pongo2.Options{
-		Directory:       macaron.Config().Section("template").Key("template_path").String(),
-		Extensions:      []string{".tmpl", ".html"},
-		Charset:         "UTF-8",
-		IndentJSON:      macaron.Env != macaron.PROD,
-		IndentXML:       true,
-		HTMLContentType: "text/html",
-	}))
-
-	if macaron.Env == macaron.DEV {
-		m.Use(toolbox.Toolboxer(m))
-	}
-
-	m.Use(env.Enver())
-
-	models.ModelInit()
-
-	routers.RouterInit(m)
-
-	tasks.TaskInit()
-
-	return m
-}
-
-func redirectToHttps(w http.ResponseWriter, req *http.Request) {
-	// remove/add not default ports from req.Host
-	target := "https://" + req.Host + req.URL.Path
-	if len(req.URL.RawQuery) > 0 {
-		target += "?" + req.URL.RawQuery
-	}
-	log.Printf("redirect to: %s", target)
-	http.Redirect(w, req, target,
-		// see @andreiavrammsd comment: often 307 > 301
-		http.StatusTemporaryRedirect)
 }
