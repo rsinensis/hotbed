@@ -19,6 +19,7 @@ _test
 .history
 vendor
 logs
+acme
 
 # binary
 hotbed

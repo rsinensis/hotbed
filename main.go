@@ -24,6 +24,7 @@ import (
 	"github.com/go-macaron/pongo2"
 	"github.com/go-macaron/session"
 	"github.com/go-macaron/toolbox"
+	"golang.org/x/crypto/acme/autocert"
 	macaron "gopkg.in/macaron.v1"
 )
 
@@ -161,6 +162,9 @@ func main() {
 	model := macaron.Config().Section("server").Key("Model").String()
 	host := macaron.Config().Section("server").Key("Host").String()
 	port := macaron.Config().Section("server").Key("Port").MustInt(80)
+	isAcme := macaron.Config().Section("server").Key("IsAcme").MustBool(false)
+	acmePath := macaron.Config().Section("server").Key("AcmePath").String()
+	isRedirect := macaron.Config().Section("server").Key("IsRedirect").MustBool(false)
 	redirectPort := macaron.Config().Section("server").Key("RedirectPort").MustInt(80)
 	certFile := macaron.Config().Section("server").Key("CertFile").String()
 	keyFile := macaron.Config().Section("server").Key("KeyFile").String()
@@ -187,28 +191,55 @@ func main() {
 			os.Exit(1)
 		}
 
-		cfg := &tls.Config{
-			MinVersion:               tls.VersionTLS12,
-			CurvePreferences:         []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256},
-			PreferServerCipherSuites: true,
-			CipherSuites: []uint16{
-				tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
-				tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
-				tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
-				tls.TLS_RSA_WITH_AES_256_CBC_SHA,
-			},
-		}
-		server.TLSConfig = cfg
-		server.TLSNextProto = make(map[string]func(*http.Server, *tls.Conn, http.Handler), 0)
+		if isAcme {
+			hostPolicy := func(ctx context.Context, checkHost string) error {
+				// Note: change to your real host
+				if host == checkHost {
+					return nil
+				}
+				return fmt.Errorf("acme/autocert: only %s host is allowed", host)
+			}
 
-		go func() {
-			log.Println(server.ListenAndServeTLS(certFile, keyFile))
-		}()
+			certPath := filepath.Join(macaron.Root, acmePath)
+			os.MkdirAll(certPath, os.ModePerm)
+
+			m := &autocert.Manager{
+				Prompt:     autocert.AcceptTOS,
+				HostPolicy: hostPolicy,
+				Cache:      autocert.DirCache(certPath),
+			}
+			server.TLSConfig = &tls.Config{GetCertificate: m.GetCertificate}
+			server.TLSNextProto = make(map[string]func(*http.Server, *tls.Conn, http.Handler), 0)
+
+			go func() {
+				log.Println(server.ListenAndServeTLS("", ""))
+			}()
+		} else {
+			cfg := &tls.Config{
+				MinVersion:               tls.VersionTLS12,
+				CurvePreferences:         []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256},
+				PreferServerCipherSuites: true,
+				CipherSuites: []uint16{
+					tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+					tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
+					tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
+					tls.TLS_RSA_WITH_AES_256_CBC_SHA,
+				},
+			}
+			server.TLSConfig = cfg
+			server.TLSNextProto = make(map[string]func(*http.Server, *tls.Conn, http.Handler), 0)
+
+			go func() {
+				log.Println(server.ListenAndServeTLS(certFile, keyFile))
+			}()
+		}
 
 		// redirect every http request to https
-		go func() {
-			log.Println(http.ListenAndServe(fmt.Sprintf("%v:%v", host, redirectPort), http.HandlerFunc(redirectToHttps)))
-		}()
+		if isRedirect {
+			go func() {
+				log.Println(http.ListenAndServe(fmt.Sprintf("%v:%v", host, redirectPort), http.HandlerFunc(redirectToHttps)))
+			}()
+		}
 	}
 
 	log.Println("Server running on:", fmt.Sprintf("%v://%v:%v", model, host, port))
