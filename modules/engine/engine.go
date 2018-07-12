@@ -14,6 +14,10 @@ func GetEngine(keys ...string) *xorm.Engine {
 		keys = append(keys, "default")
 	}
 
+	if len(keys) > 1 {
+		panic(fmt.Sprintf("keys overflow %v", keys))
+	}
+
 	vv, ok := engineMap.Load(keys[0])
 	if !ok {
 		panic(fmt.Sprintf("get engine %v err", keys))
