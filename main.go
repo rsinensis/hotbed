@@ -5,13 +5,13 @@ import (
 	"crypto/tls"
 	"flag"
 	"fmt"
-	"hotbed/models"
-	"hotbed/modules/env"
-	"hotbed/modules/recovery"
-	"hotbed/routers"
-	"hotbed/tasks"
-	"hotbed/tools/id"
-	"hotbed/tools/record"
+	"hotbed/controller"
+	"hotbed/model"
+	"hotbed/module/env"
+	"hotbed/module/recovery"
+	"hotbed/task"
+	"hotbed/tool/id"
+	"hotbed/tool/record"
 	"log"
 	"net/http"
 	"net/url"
@@ -108,11 +108,11 @@ func getHandler() *macaron.Macaron {
 
 	m.Use(env.Enver())
 
-	models.ModelInit()
+	model.ModelInit()
 
-	routers.RouterInit(m)
+	controller.ControllerInit(m)
 
-	tasks.TaskInit()
+	task.TaskInit()
 
 	return m
 }
@@ -132,7 +132,7 @@ func main() {
 		BuildMode = "dev"
 	}
 
-	configPath := filepath.Join(macaron.Root, "configs", fmt.Sprintf("config_%v.ini", BuildMode))
+	configPath := filepath.Join(macaron.Root, "config", fmt.Sprintf("config_%v.ini", BuildMode))
 	if _, err := macaron.SetConfig(configPath); err != nil {
 		log.Println(fmt.Sprintf("App load config:%v error:%v", configPath, err))
 		os.Exit(1)
@@ -249,10 +249,14 @@ func main() {
 	// Wait for interrupt signal to gracefully shutdown the server with
 	// a timeout of 5 seconds.
 
-	quit := make(chan os.Signal)
-	signal.Notify(quit, os.Interrupt)
-	<-quit
-	log.Println("Shutdown Server ...")
+	quit := make(chan os.Signal, 2)
+	signal.Notify(quit, os.Interrupt, os.Kill)
+	switch <-quit {
+	case os.Interrupt:
+		log.Println("Shutdown Server by Notify Interrupt ...")
+	case os.Kill:
+		log.Println("Shutdown Server by Notify Kill ...")
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
