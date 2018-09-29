@@ -1,0 +1,3 @@
+[App] 2018/06/07 15:44:22.023511 [ERROR] (dao_dictionary_type.go:21) Error 1366: Incorrect string value: '\xE5\xAD\xA6\xE5\x8E\x86' for column 'code' at row 1
+[App] 2018/06/07 15:50:44.365097 [ERROR] (dao_dictionary_type.go:23) Error 1366: Incorrect string value: '\xE5\xAD\xA6\xE5\x8E\x86' for column 'code' at row 1
+[App] 2018/06/07 16:06:49.593354 [ERROR] (dao_dictionary_type.go:21) Error 1366: Incorrect string value: '\xE5\xAD\xA6\xE5\x8E\x86' for column 'name' at row 1
